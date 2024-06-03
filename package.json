@@ -1,0 +1,17 @@
+{
+  "name": "1.10_nodemonandpackage",
+  "version": "1.0.0",
+  "description": "Sharpner 10th task Nodejs",
+  "main": "index.js",
+  "type":"module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js",
+    "start-server": "node index.js"
+  },
+  "author": "SurajNyavanandi",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.2"
+  }
+}
