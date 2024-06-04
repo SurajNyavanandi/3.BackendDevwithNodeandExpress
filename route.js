@@ -21,7 +21,7 @@ const route = async (req, res) => {
 
         req.on('end', async () => {
             let parseBody = Buffer.concat(body).toString();
-            let data = parseBody.split('=')[1];
+            let data = parseBody.split('=')[0];
 
             await fs.writeFile('./message.txt', data);
             let fileData = await fs.readFile('./message.txt', 'utf8');
