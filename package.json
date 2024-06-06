@@ -1,17 +1,15 @@
 {
-  "name": "1.10_nodemonandpackage",
+  "name": "expresssharpner",
   "version": "1.0.0",
-  "description": "Sharpner 10th task Nodejs",
-  "main": "index.js",
-  "type":"module",
+  "description": "",
+  "main": "2.1_app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js",
-    "start-server": "node index.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "SurajNyavanandi",
+  "keywords": [],
+  "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "nodemon": "^3.1.2"
+  "dependencies": {
+    "express": "^4.19.2"
   }
 }
