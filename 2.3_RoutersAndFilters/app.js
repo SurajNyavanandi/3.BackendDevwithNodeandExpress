@@ -8,7 +8,7 @@ app.use(bodyParser.urlencoded({extended:false}));
 
 //Routes
 app.use('/admin',adminRoutes);
-app.use(shopRoutes);
+app.use('/shop',shopRoutes);
 
 //ErrorHandling
 app.use((req,res,next)=>{
