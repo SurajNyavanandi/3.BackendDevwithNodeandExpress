@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project1</title>
+</head>
+<body>
+    <h1>Booking Appointment App</h1>
+    <label for="username">Username:</label>
+    <input type="text" id="username" placeholder="Enter Username">
+    <br>
+    <label for="phoneNumber">Phone Number:</label>
+    <input type="text" id="phoneNumber" placeholder="Enter Phone Number">
+    <br>
+    <label for="email">Email:</label>
+    <input type="email" id="email" placeholder="Enter Email">
+    <br>
+    <button onclick="submitUser()">Submit</button>
+    <div id="container"></div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js"></script>
+<script>
+    const container = document.querySelector('#container');
+    const api = "http://localhost:3000/api/users";
+
+    displayUsers();
+
+    function submitUser(){
+        const user = {
+            username: document.querySelector('#username').value,
+            phoneNumber: document.querySelector('#phoneNumber').value,
+            email: document.querySelector('#email').value
+        }
+        axios.post(api, user)
+            .then((res) => {
+                displayUsers();
+                console.log('User Details Posted Successfully')
+                clearInputs();
+            })
+            .catch((err) => console.log('ERROR: Posting User Details'))
+    }
+
+    function displayUsers(){
+        container.innerHTML = '';
+        axios.get(api)
+            .then((res) => {
+                const arr = res.data;
+                arr.forEach((user, index) => {
+                    const ic = document.createElement('div');
+                    ic.innerHTML = `<span>${user.id} -- ${user.username} -- ${user.phoneNumber} -- ${user.email}</span>
+                                    <button onclick="editUser(this, '${user.id}', '${user.username}', '${user.phoneNumber}', '${user.email}')">Edit</button>
+                                    <button onclick="saveUser(this, '${user.id}')" style="display:none">Save</button>
+                                    <button onclick="deleteUser(this, '${user.id}')">Delete</button>`;
+                    container.appendChild(ic);
+                    clearInputs();
+                })
+            }).catch((err) => console.log('ERROR: Displaying User Details'))
+    }
+
+    function editUser(editbutton, id, username, phoneNumber, email){
+        editbutton.nextElementSibling.style.display = "inline-block";
+        editbutton.style.display = "none";
+        document.querySelector('#username').value = username;
+        document.querySelector('#phoneNumber').value = phoneNumber;
+        document.querySelector('#email').value = email;
+        document.querySelector('#username').focus();
+    }
+
+    function saveUser(savebutton, id){
+        savebutton.previousElementSibling.style.display = "inline-block";
+        savebutton.style.display = "none";
+        const newValue = {
+            username: document.querySelector('#username').value,
+            phoneNumber: document.querySelector('#phoneNumber').value,
+            email: document.querySelector('#email').value
+        }
+        axios.put(`${api}/${id}`, newValue)
+            .then((res) => {
+                displayUsers();
+                console.log('User Details Put Successfully') 
+                clearInputs(); 
+            })
+            .catch((err) => console.log('ERROR: Putting User Details'))
+    }
+
+    function deleteUser(deletebutton, id){
+        axios.delete(`${api}/${id}`)
+            .then((res) => {
+                displayUsers();
+                console.log('User Details Deleted Successfully')
+                clearInputs();
+            })
+            .catch((err) => console.log('ERROR: Deleting User Details'))
+    }
+
+    function clearInputs(){
+        document.querySelector('#username').value = '';
+        document.querySelector('#phoneNumber').value = '';
+        document.querySelector('#email').value = '';
+    }
+</script>
+</html>
