@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sharpner Project</title>
+</head>
+<body>
+   <h1>Expense Tracker</h1>
+   <label for="price">Selling Price :</label>
+   <input type="number" id="price"> 
+   <label for="name">Product Name :</label>
+   <input type="text" id="name">
+   <button onclick="addProduct()">Add Product</button>
+   <h2>Products</h2>
+   <ul id="container"></ul>
+   
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.0/axios.min.js"></script>
+<script>
+    const api = "http://localhost:3000/api/products";
+    const container = document.querySelector('#container');
+    const div2 = document.createElement('div');
+    document.body.appendChild(div2);
+
+    displayItems();
+
+    function addProduct() {
+        const product = {
+            price: document.querySelector('#price').value,
+            name: document.querySelector('#name').value
+        };
+        axios.post(api, product)
+            .then((res) => {
+                displayItems();
+                console.log('Posted Successfully');
+                clearInputs();
+            })
+            .catch((err) => console.log('ERROR: posting'));
+    }
+
+    function displayItems() {
+        let sum = 0;
+        container.innerHTML = '';
+        axios.get(api)
+            .then((res) => {
+                const arr = res.data;
+                arr.forEach((product, index) => {
+                    const str = `${product.price}`;
+                    sum += parseInt(str);
+                    const ic = document.createElement('div');
+                    ic.innerHTML = `<span>${product.price}--${product.name}</span>
+                                    <button onclick="editProduct(this, '${product.id}', '${product.price}', '${product.name}')">Edit</button>
+                                    <button onclick="saveProduct(this, '${product.id}')" style="display:none">Save</button>
+                                    <button onclick="deleteProduct(this, '${product.id}')">Delete</button>`;
+                    container.appendChild(ic);
+                    displaySum(sum);
+                    clearInputs();
+                });
+            }).catch((err) => console.log('ERROR: displaying'));
+    }
+
+    function editProduct(editbutton, id, price, name) {
+        editbutton.nextElementSibling.style.display = "inline-block";
+        editbutton.style.display = "none";
+        document.querySelector('#price').value = price;
+        document.querySelector('#name').value = name;
+        document.querySelector('#price').focus();
+    }
+
+    function saveProduct(savebutton, id) {
+        savebutton.previousElementSibling.style.display = "inline-block";
+        savebutton.style.display = "none";
+        const newValue = {
+            price: document.querySelector('#price').value,
+            name: document.querySelector('#name').value
+        };
+        axios.put(`${api}/${id}`, newValue)
+            .then((res) => {
+                displayItems();
+                console.log('Product Details Put Successfully') 
+                clearInputs(); 
+            })
+            .catch((err) => console.log('ERROR: Putting Product Details'));
+    }
+
+    function deleteProduct(button, id) {
+        axios.delete(`${api}/${id}`)
+            .then((res) => {
+                displayItems();
+                button.parentElement.remove();
+                console.log('Deleted Successfully');
+                clearInputs();
+            })
+            .catch((err) => console.log('ERROR: deleting'));
+    }
+
+    function displaySum(s) {
+        div2.innerHTML = `<span>Total Value Worth Of Products: Rs ${s}</span>`;
+    }
+
+    function clearInputs() {
+        document.querySelector('#name').value = '';
+        document.querySelector('#price').value = '';
+    }
+</script>
+</html>
