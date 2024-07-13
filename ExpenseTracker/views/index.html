@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+</head>
+<body>
+    <label for="username">Enter Username :</label>
+    <input type="text" name="username" id="username" placeholder="Username">
+    <label for="email">Enter Email :</label>
+    <input type="email" name="email" id="email" placeholder="Email">
+    <label for="password">Enter Password :</label>
+    <input type="password" name="password" id="password">
+    <button onclick="signUp()">Sign Up</button>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
+<script>
+      let api=`http://localhost:8026/user`;
+
+      function signUp(){
+        let user={
+            username:document.querySelector('#username').value,
+            email:document.querySelector('#email').value,
+            password:document.querySelector('#password').value
+        }
+        axios.post(`${api}/signup`,user)
+           .then((res)=>{
+            console.log("User signup details posted successfully");
+           })
+           .catch((err)=>console.log("ERROR:Posting user signup details "));
+      }
+      
+</script>
+</html>
