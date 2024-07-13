@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body{
+            background: rgb(175, 175, 175);
+            padding: 26px;
+            margin: 26px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Login</h1>
+    <form id="loginForm">
+        <label for="email">Email.......:</label>
+        <input type="email" name="email" id="email" placeholder="Enter email" required><br>
+        <label for="password">Password :</label>
+        <input type="password" name="password" id="password" placeholder="********" required><br>
+        <button type="submit">Login</button>
+    </form>
+    <br>
+    <div id="cont1"></div>
+    <a href="http://localhost:8026/signup">New User----Sign Up</a> 
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
+<script>
+    let api = `http://localhost:8026/user`;
+    let cont1 = document.querySelector('#cont1');
+    let form = document.querySelector('#loginForm');
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        let user = {
+            email: document.querySelector('#email').value,
+            password: document.querySelector('#password').value
+        };
+        axios.post(`${api}/login`, user)
+         .then((res) => {
+                 cont1.innerHTML = '';
+                 cont1.innerHTML = `Login Successful`;
+         })
+         .catch((err) => {
+                  cont1.innerHTML = '';
+                  cont1.innerHTML = `Invalid Email/Password`;
+         });
+    });
+</script>
+</html>
