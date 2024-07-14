@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense</title>
+</head>
+<body>
+    <h3>Expense Tracker</h3>
+    <form id="expenseForm" onsubmit="addExpense(event)">
+        <label for="amount">Choose expense amount :</label>
+        <input type="number" name="amount" id="amount" required>
+
+        <label for="description">Choose description :</label>
+        <input type="text" name="description" id="description" required>
+
+        <label for="category">Choose a category</label>
+        <select name="category" id="category" required>
+            <option value="Fuel">Fuel</option>
+            <option value="Movie">Movie</option>
+            <option value="Travel">Travel</option>
+            <option value="Others">Others</option>
+        </select>
+        <button type="submit">Add Expense</button>
+    </form>
+    <h4>Expense List</h4>
+    <div id="cont"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
+    <script>
+        const cont = document.querySelector('#cont');
+        const api = `http://localhost:8026/expense`;
+        displayExpenses();
+
+        
+        function addExpense(event) {
+            event.preventDefault();
+            let expense = {
+                amount: document.querySelector('#amount').value,
+                description: document.querySelector('#description').value,
+                category: document.querySelector('#category').value
+            }
+            axios.post(`${api}/addexpense`, expense)
+                .then((res) => {
+                    console.log("Expense details posted successfully");
+                    displayExpenses();
+                })
+                .catch((err) => {
+                    console.log("Error posting expense details", err);
+                });
+        }
+
+        function displayExpenses() {
+            axios.get(`${api}/addexpense`)
+                .then((res) => {
+                    cont.innerHTML = ''; 
+                    let arr = res.data;
+                    arr.forEach((list, index) => {
+                        let ic = document.createElement('div');
+                        ic.innerHTML = `<span>${list.amount}--${list.description}--${list.category}</span>
+                                       <button onclick="deleteExpense('${list.id}')">Delete Expense</button>`;
+                        cont.appendChild(ic);
+                    });
+                })
+                .catch((err) => {
+                    console.log("Error fetching expense details", err);
+                });
+        }
+        function deleteExpense(id) {
+            axios.delete(`${api}/addexpense/${id}`)
+                .then((res) => {
+                    console.log("Expense deleted successfully");
+                    displayExpenses();
+                })
+                .catch((err) => {
+                    console.log("Error deleting expense details", err);
+                });
+        }
+       
+    </script>
+</body>
+</html>
