@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+     <form onsubmit="postLogin(event)">
+        <label for="email">Email :</label>
+        <input type="email" name="email" id="email" placeholder="abc@gmail.com" required>
+        <label for="password">Password :</label>
+        <input type="password" name="password" id="password" placeholder="********" required>
+        <button type="submit">Login</button>
+     </form>
+     <a href="http://localhost:7026/signup">New User--Sign Up</a>
+     <div id="cont"></div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
+<script>
+    let cont = document.querySelector('#cont');
+    let api = `http://localhost:7026/user`;
+
+    function postLogin(event) {
+        event.preventDefault();
+        let user = {
+            email: document.querySelector('#email').value,
+            password: document.querySelector('#password').value
+        };
+        clearInputs();
+        axios.post(`${api}/login`, user)
+             .then((res) => {
+             //   cont.innerHTML = '';
+                //res.data.Message
+               // let data=JSON.stringify(res.data.Message);
+               // cont.innerHTML = `${data}`;
+               localStorage.setItem('token',res.data.token);
+               if (res.status === 200) {
+                       window.location.href = 'http://localhost:7026/addexpense';
+                   }
+             })
+             .catch((err) => {
+                cont.innerHTML = '';
+                //err.response.data.Error
+                //err.response.status
+                let data=JSON.stringify((err.response.data).Error);
+                cont.innerHTML = `${data}`;
+             });
+    }
+    function clearInputs() {
+        document.querySelector('#email').value = "";
+        document.querySelector('#password').value = "";
+    }
+</script>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+</head>
+<body>
+    <h2>Sign Up</h2>
+    <form onsubmit="postSignUp(event)">
+        <label for="name">Enter Name :</label>
+        <input type="text" name="name" id="name" placeholder="Name" required>
+        <label for="email">Enter Email :</label>
+        <input type="email" name="email" id="email" placeholder="Email" required>
+        <label for="password">Enter Password :</label>
+        <input type="password" name="password" id="password" placeholder="********" required>
+        <button type="submit">Sign Up</button>
+    </form>
+    <a href="http://localhost:7026/login">Existing User--Login</a>
+    <div id="cont"></div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
+<script>
+    let api = `http://localhost:7026/user`;
+    let cont = document.querySelector('#cont');
+
+    function postSignUp(event) {
+        event.preventDefault();
+        let user = {
+            name: document.querySelector('#name').value,
+            email: document.querySelector('#email').value,
+            password: document.querySelector('#password').value
+        };
+        clearInputs();
+        axios.post(`${api}/signup`, user)
+             .then((res) => {
+                cont.innerHTML = '';
+                cont.innerHTML = `SignUp Successful`;
+             })
+             .catch((err) => {
+                cont.innerHTML = '';
+                cont.innerHTML = `Error signing up`;
+             });
+    }
+
+    function clearInputs() {
+        document.querySelector('#name').value = '';
+        document.querySelector('#email').value = '';
+        document.querySelector('#password').value = '';
+    }
+</script>
+</html>
