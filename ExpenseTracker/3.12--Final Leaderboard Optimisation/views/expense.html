@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense</title>
+</head>
+<body>
+    <h2>Expense</h2>
+    <form onsubmit="postExpense(event)">
+        <label for="amount">Choose amount :</label>
+        <input type="number" name="amount" id="amount" placeholder="₹0" required>
+        <label for="description">Choose description :</label>
+        <input type="text" name="description" id="description" placeholder="description" required>
+        <label for="category">Choose a category </label>
+        <select name="category" id="category">
+            <option value="Fuel">Fuel</option>
+            <option value="Movie">Movie</option>
+            <option value="Food">Food</option>
+            <option value="Others">Others</option>
+        </select>
+        <button type="submit">Add Expense</button>
+    </form>
+    <div id="cont0"></div>
+    <button onclick="buyPremium()" id="premiumBtn">Buy Premium Membership</button>
+    <h3>Expenses list</h3>
+    <div id="cont"></div>
+
+    
+    <div id="leaderboard" style="display: none;">
+        <h3>Leaderboard</h3>
+        <ul id="leaderboardList"></ul>
+    </div>
+    
+     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+
+
+       
+
+        let api = `http://localhost:7026/expense`;
+        let cont = document.querySelector('#cont');
+        let token = localStorage.getItem('token');
+        
+        displayExpenses();
+
+        function postExpense(event) {
+            event.preventDefault();
+            let expense = {
+                amount: document.querySelector('#amount').value,
+                description: document.querySelector('#description').value,
+                category: document.querySelector('#category').value
+            };
+            clearInputs();
+            axios.post(`${api}/addexpense`, expense, {
+                headers: {
+                    'Authorization': token
+                }
+            })
+            .then((res) => {
+                console.log("Successfully posted expense details");
+                displayExpenses();
+                //showLeaderboard();
+            })
+            .catch((err) => {
+                console.log("Error posting expense details");
+            });
+        };
+
+        function displayExpenses() {
+            axios.get(`${api}/addexpense`, {
+                headers: {
+                    'Authorization': token
+                }
+            })
+            .then((res) => {
+                cont.innerHTML = '';
+                let arr = res.data;
+                arr.forEach((expense, index) => {
+                    let ic = document.createElement('div');
+                    ic.innerHTML = `<span>${expense.amount}--${expense.description}--${expense.category}</span>
+                                    <button onclick="deleteExpense('${expense.id}')">Delete Expense</button>`;
+                    cont.appendChild(ic);
+                });
+            });
+        }
+
+        function deleteExpense(id) {
+            axios.delete(`${api}/addexpense/${id}`, {
+                headers: {
+                    'Authorization': token
+                }
+            })
+            .then((res) => {
+                displayExpenses();
+               // showLeaderboard();
+                console.log("Successfully deleted expense");
+                       
+            })
+            .catch((err) => {
+                console.log("Error deleting expense");
+            });
+        }
+
+        function clearInputs() {
+            document.querySelector('#amount').value = "";
+            document.querySelector('#description').value = "";
+            document.querySelector('#category').value = "";
+        }
+
+        function buyPremium() {
+            axios.post(`http://localhost:7026/premium/createOrder`, {}, {
+                headers: {
+                    'Authorization': token   //id,email
+                }
+            })
+            .then(response => {
+                const options = {
+                    "key": "rzp_test_PnMJD6zIJVFJFg", 
+                    "amount": response.data.amount,
+                    "currency": "INR",
+                    "name": "Demo Expense App",
+                    "description": "Test Transaction",
+                    "order_id": response.data.orderId,
+                    "handler": function (response) {
+                        axios.post(`http://localhost:7026/premium/updateOrderStatus`, {
+                            order_id: options.order_id,
+                            status: 'SUCCESSFUL'
+                        }, {
+                            headers: {
+                                'Authorization': token
+                            }
+                        })
+                        .then(() => {
+                            alert('Transaction successful');
+                            localStorage.setItem('isPremium','true');
+                            window.location.reload();
+                        })
+                        .catch(() => {
+                            alert('Transaction successful but could not update status');
+                        });
+                    },
+                    "prefill": {
+                        "name": "User Name",
+                        "email": "user@example.com"
+                    },
+                    "theme": {
+                        "color": "#3399cc"
+                    }
+                };
+                const rzp1 = new Razorpay(options);
+                rzp1.open();
+            })
+            .catch(() => {
+                alert('Error in creating order');
+            });
+        }
+
+
+
+
+
+
+        document.addEventListener('DOMContentLoaded',()=>{
+        let isPremium=localStorage.getItem('isPremium')==='true';
+        if(isPremium){
+                          
+                          document.querySelector('#premiumBtn').style.display='none';
+                            let div=document.createElement('div');
+                            div.innerHTML=`<h4>Premium Features</h4>
+                                           <button onclick="showLeaderboard()">LeaderBoard</button>`;
+                            let cont0=document.querySelector('#cont0');
+                            cont0.appendChild(div);
+                           // showLeaderboard();
+            
+           
+        }
+       });
+       function showLeaderboard() {
+            axios.get('http://localhost:7026/leaderboard/leaderboard', {
+                headers: {
+                    'Authorization': token
+                }
+            })
+            .then(res => {
+                let leaderboard = document.querySelector('#leaderboard');
+                let leaderboardList = document.querySelector('#leaderboardList');
+                leaderboardList.innerHTML = '';
+                res.data.forEach(user => {
+                    let li = document.createElement('li');
+                    li.textContent = `${user.name} - ₹${user.totalAmount}`;
+                    leaderboardList.appendChild(li);
+                });
+                leaderboard.style.display = 'block';
+            })
+            .catch(err => {
+                console.error('Error fetching leaderboard:', err);
+            });
+        }
+
+      
+    </script>
+</body>
+</html>
