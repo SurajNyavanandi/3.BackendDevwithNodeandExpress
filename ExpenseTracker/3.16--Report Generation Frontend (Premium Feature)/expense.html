@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense</title>
+</head>
+<body>
+    <h3>Add Expense</h3>
+    <form action="" onsubmit="postExpense(event)">
+        <label for="amount">Amount :</label>
+        <input type="number" name="amount" id="amount" placeholder="Enter Amount " required>
+        <label for="description">Description :</label>
+        <input type="text" name="description" id="description" placeholder="Enter Description" required>
+        <label for="category">Category :</label>
+        <select name="category" id="category">
+            <option value="Fuel">Fuel</option>
+            <option value="Movie">Movie</option>
+            <option value="Food">Food</option>
+            <option value="Others">Others</option>
+        </select>
+        <div id="income-div" style="display: none">
+            <label for="income" >Income :</label>
+            <input type="number" name="income" id="income" placeholder="Enter income">
+        </div>
+        
+        <button type="submit">Add Expense</button>
+    </form>
+    <ul id="cont2"></ul>
+    <button onclick="buyPremium(event)" id="buyPremium">Buy Premium</button>
+    <h4>List of Expenses</h4>
+    <ul id="cont"></ul>
+    <ul id="cont3"></ul>
+    <u1 id="cont4"></u1> <!--  for viewing expenses -->
+   
+
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jwt-decode/3.1.2/jwt-decode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsonwebtoken/9.0.2/jsonwebtoken.min.js"></script> -->
+
+<script>
+       //1-Basic
+       let api=`http://localhost:7000/expense`;
+       let cont=document.querySelector('#cont');
+       displayExpenses();
+       function postExpense(event){
+             event.preventDefault();
+
+             let expense={
+                amount:document.querySelector('#amount').value,
+                description :document.querySelector('#description').value,
+                category:document.querySelector('#category').value
+             }
+             axios.post(`${api}/addexpense`,expense,{
+                headers:{
+                    'Authorization':localStorage.getItem('token')
+                }
+             })
+                  .then((res)=>{
+                   console.log("Posted expense details");
+                   displayExpenses();
+                   clearInputs();
+                  })
+                  .catch((err)=>{
+                    console.log("Error posting expense details",err);
+                  })
+       }
+       function displayExpenses(){
+        axios.get(`${api}/addexpense`,{
+                headers:{
+                    'Authorization':localStorage.getItem('token')
+                }
+             })
+             .then((res)=>{
+                cont.innerHTML='';
+                let arr=res.data;
+                arr.forEach((expense,index)=>{
+                    let ic=document.createElement('li');
+                    ic.innerHTML=` <span>${expense.amount}--${expense.description}--${expense.category}</span>
+                                  <button onclick="deleteExpense('${expense.id}')">Delete</button>`;
+                    cont.appendChild(ic);
+
+                })
+             })
+             .catch((err)=>{
+                console.log("Error displaying expenses",err);
+             })
+       }
+       function deleteExpense(id){
+           axios.delete(`${api}/addexpense/${id}`,{
+                headers:{
+                    'Authorization':localStorage.getItem('token')
+                }
+             })
+                .then((res)=>{
+                    console.log("Expense deleted");
+                    displayExpenses();
+                })
+                .catch((err)=>{
+                    console.log("Error deleting expense",err);
+                })
+       }
+       function clearInputs(){
+        document.querySelector('#amount').value='';
+        document.querySelector('#description').value='';
+        document.querySelector('#category').value='';
+       }
+
+
+
+       //2-Premium
+       let api2=`http://localhost:7000/premium`;
+       function buyPremium(event){
+        event.preventDefault();
+  
+            axios.post(`${api2}/createOrder`,{},{
+                headers:{
+                 'Authorization':localStorage.getItem('token')   
+                }
+            })
+            .then((res)=>{
+
+                var options = {
+                    
+                    "key": "rzp_test_PnMJD6zIJVFJFg", 
+                    "amount": res.data.amount, 
+                    "currency": "INR",
+                    "name": "Acme Corp",
+                    "description": "Test Transaction",
+                    "image": "https://example.com/your_logo",
+                    "order_id": res.data.id, 
+                    "handler": function (response){
+                        axios.post(`${api2}/updateOrderStatus`, {
+                                      orderId: res.data.id
+                                 }, {
+                                   headers: {
+                                    'Authorization': localStorage.getItem('token')
+                                     }
+                         })
+                        .then((res)=>{
+                            console.log("Order status updated successfully");
+                            
+
+                             // UpdatePremiumStatus(localStorage+db);
+                             axios.post(`${api2}/updatePremiumStatus`, {}, {
+                                    headers: {
+                                           'Authorization': localStorage.getItem('token')
+                                          }
+                                      })
+                                    .then((res) => {    
+                                        localStorage.setItem('isPremium','true');    
+                                         console.log("Updated premiumStatus in localStorage successfully");
+                                    })
+                                    .catch((err) => {
+                                        console.log("Error updating premiumStatus in localStorage", err);
+                                    })
+                           
+                        })
+                        .catch((err)=>{
+                            console.log("Error updating order status");
+                        })
+                    },
+                    "prefill": {
+                        "name": "Suraj Nyavanandi",
+                        "email": "gaurav.kumar@example.com",
+                        "contact": "9000090000"
+                    },
+                    "notes": {
+                        "address": "Razorpay Corporate Office"
+                    },
+                    "theme": {
+                        "color": "#3399cc"
+                    }
+                };
+                var rzp1 = new Razorpay(options);
+                rzp1.open();    
+                })
+                .catch((err)=>{
+                  console.log("Error creating order");  
+                })
+                
+                
+                
+            }
+
+
+             //3.Leaderboard
+             showLeaderboard();
+             function showLeaderboard(){
+                 document.addEventListener('DOMContentLoaded', () => {    
+              let premium=localStorage.getItem('isPremium');
+              if(premium==='true'){
+                    document.querySelector('#buyPremium').style.display="none";
+                    document.querySelector('#income-div').style.display="inline-block";
+                         let cont2=document.querySelector('#cont2');
+                         let div=document.createElement('div');
+                         div.innerHTML=`<span>You are a premium user!</span><br>
+                                        <h4>Show Leaderboard</h4>
+                                        <button onclick="leaderboardImp()">Leaderboard</button>
+                                        <h4>View Expenses</h4>
+                                        <button onclick="dailyExpenses()">Daily Expenses</button>
+                                        <button onclick="monthlyExpenses()">Monthly Expenses</button>
+                                        <button onclick="yearlyExpenses()">Yearly Expenses</button>
+                                        `;
+               cont2.appendChild(div);
+            }
+            //leaderboardImp();   
+               });
+             }
+             
+             function leaderboardImp(){
+                let cont3=document.querySelector('#cont3');
+                cont3.innerHTML=`<h3>LeaderBoard</h3>`
+                axios.get(`${api2}/leaderboard`)
+                     .then((res)=>{
+                          let arr=res.data;
+                          arr.forEach((user,index)=>{
+                            let li=document.createElement('li');
+                            li.innerHTML=`<span>${index+1}--Name:${user.name}--Amount:${user.totalAmount}</span>`;
+                            cont3.appendChild(li);
+                          });
+                          console.log("Leaderboard users displayed successfully");
+                     })
+                     .catch((err)=>{
+                          console.log("Error displaying Leaderboard users");
+                     })
+             }
+
+    //4.Viewing expenses based on daily,monthly,yearly and also displaying income
+    function dailyExpenses() {
+        fetchExpenses('daily');
+    }
+
+    function monthlyExpenses() {
+        fetchExpenses('monthly');
+    }
+
+    function yearlyExpenses() {
+        fetchExpenses('yearly');
+    }
+
+    function fetchExpenses(period) {
+        let url = `${api}/expenses/${period}`;
+        axios.get(url, {
+            headers: {
+                'Authorization': localStorage.getItem('token')
+            }
+        })
+            .then((res) => {
+                cont4.innerHTML = '';
+                let arr = res.data;
+                arr.forEach((expense, index) => {
+                    let ic = document.createElement('li');
+                    ic.innerHTML = `<span>${index + 1}. ${expense.createdAt} -- ${expense.amount} -- ${expense.description} -- ${expense.category} -- ${expense.income ? 'Income' : 'Expense'}</span>`;
+                    cont4.appendChild(ic);
+                });
+            })
+            .catch((err) => {
+                console.log(`Error fetching ${period} expenses`, err);
+            });
+    }  
+           
+  
+            
+            
+            
+        </script>
+        
+         
+        
+</html>
