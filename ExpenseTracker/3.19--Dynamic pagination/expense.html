@@ -32,6 +32,16 @@
     <button onclick="buyPremium(event)" id="buyPremium">Buy Premium</button>
     
     <h4>List of All Expenses</h4>
+    <div>
+        <label for="expenses-per-page">Rows per page:</label>
+        <select id="expenses-per-page" onchange="updateExpensesPerPage()">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+    </div>
     <ul id="cont"></ul>
     <div id="pagination">
         <button onclick="prevPage()">Previous</button>
@@ -77,8 +87,9 @@
        }
     //Display Expense
     let currentPage = 1;
-    const expensesPerPage = 10;
+    let expensesPerPage = localStorage.getItem('expensesPerPage') || 10;
     let totalPages = 0;
+    document.querySelector('#expenses-per-page').value = expensesPerPage;
 
     function displayExpenses(page = 1) {
         axios.get(`${api}/addexpense?page=${page}&limit=${expensesPerPage}`, {
@@ -143,6 +154,17 @@
         document.querySelector('#description').value='';
         document.querySelector('#category').value='';
        }
+       function updateExpensesPerPage() {
+            expensesPerPage = document.querySelector('#expenses-per-page').value;
+            localStorage.setItem('expensesPerPage', expensesPerPage);
+            displayExpenses(currentPage);
+        }
+
+
+
+
+
+
 
                                                                              //PREMIUM CODE-2
        let api2=`http://localhost:7000/premium`;
