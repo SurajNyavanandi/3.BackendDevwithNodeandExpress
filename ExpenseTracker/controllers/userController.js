@@ -19,5 +19,5 @@ exports.createUserLogin = async (req, res) => {
        res.status(200).json({ Message: 'User login successful' });
    } catch (error) {
        res.status(500).send({ Error: 'Error checking login details' });
-   }
+    }
 };
